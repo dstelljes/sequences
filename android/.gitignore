@@ -1,0 +1,10 @@
+*.class
+*.iml
+.gradle/
+.settings/
+
+/build
+/captures
+/local.properties
+
+GeneratedPluginRegistrant.java
