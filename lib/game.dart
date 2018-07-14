@@ -5,8 +5,8 @@ class Cell {
   int _number;
   bool _selected = false;
 
-  get number => _number;
-  get selected => _selected;
+  int get number => _number;
+  bool get selected => _selected;
 
   Cell(this._number);
 
@@ -29,12 +29,17 @@ class Game {
   int get moves => _moves;
   int get score => _score;
 
-  bool get canHoof {
-    if (selected.length < _minimum) {
-      return false;
+  int get hoofSize {
+    final numbers = selected.map((c) => c.number).toList();
+
+    if (numbers.length < _minimum) {
+      return null;
     }
 
-    final numbers = selected.map((c) => c.number).toList();
+    if (numbers.length < 2) {
+      return 0;
+    }
+
     numbers.sort();
 
     final differences = List.generate(
@@ -42,7 +47,9 @@ class Game {
       (i) => numbers[i + 1] - numbers[i]
     );
 
-    return differences.every((d) => d == differences[0]);
+    return differences.every((d) => d == differences[0])
+      ? differences[0]
+      : null;
   }
 
   bool get nextLevel => selected.any((c) => c._number == _level);
@@ -64,6 +71,28 @@ class Game {
       _height * _width,
       (i) => Cell(this._generator(this._level))
     );
+  }
+
+  void clear() {
+    _cells.forEach((c) => c._selected = false);
+  }
+
+  void hoof() {
+    final difference = hoofSize;
+
+    if (difference == null) {
+      throw GameError("No valid sequence selected.");
+    }
+
+    final count = selected.length;
+    final highest = selected.map((c) => c.number).reduce(max);
+    final next = nextLevel;
+
+    _level += next ? 1 : 0;
+    _moves += next ? sqrt(_level).floor() : -1;
+    _score = pow(difference, count) * highest;
+
+    _cells = _cells.map((c) => c._selected ? Cell(_generator(_level)) : c).toList();
   }
 
   void toggle(int x, int y) {
