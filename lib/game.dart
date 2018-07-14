@@ -46,13 +46,12 @@ class Game {
     );
   }
 
-  void toggle(int x, [int y = 0]) {
-    final index = (y * _width) + x;
-
-    if (index >= _cells.length) {
+  void toggle(int x, int y) {
+    if (x >= _width || y >= _height) {
       throw GameError("Coordinates out of range.");
     }
 
+    final index = (y * _width) + x;
     _cells[index]._selected = !_cells[index]._selected;
   }
 
@@ -66,4 +65,4 @@ class GameError extends Error {
 
 }
 
-typedef int Generator(int index);
+typedef int Generator(int level);
