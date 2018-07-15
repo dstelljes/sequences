@@ -1,46 +1,36 @@
 import 'dart:math';
 
-class Cell {
-
-  int _number;
-  bool _selected = false;
-
-  int get number => _number;
-  bool get selected => _selected;
-
-  Cell(this._number);
-
-}
+typedef int Generator(int level);
 
 class Game {
 
-  int _height;
-  int _minimum;
-  int _width;
-
-  List<Cell> _cells;
+  List<GameCell> _cells;
   Generator _generator;
+  int _height;
   int _level = 5;
+  int _minimum;
   int _moves = 6;
   int _score = 0;
+  int _width;
 
-  List<Cell> get cells => _cells;
+  List<GameCell> get cells => _cells;
+  int get height => height;
   int get level => _level;
+  int get minimum => minimum;
   int get moves => _moves;
   int get score => _score;
+  int get width => width;
 
-  int get hoofSize {
-    final numbers = selected.map((c) => c.number).toList();
-
-    if (numbers.length < _minimum) {
+  int get difference {
+    if (selected.length == 0) {
       return null;
     }
 
-    if (numbers.length < 2) {
+    if (selected.length == 1) {
       return 0;
     }
 
-    numbers.sort();
+    final numbers = selected.map((c) => c.number).toList()..sort();
 
     final differences = List.generate(
       max(0, numbers.length - 1),
@@ -52,9 +42,23 @@ class Game {
       : null;
   }
 
-  bool get nextLevel => selected.any((c) => c._number == _level);
+  GamePreview get preview {
+    if (difference == null || selected.length < _minimum) {
+      return null;
+    }
 
-  List<Cell> get selected => _cells.where((c) => c._selected).toList();
+    final count = selected.length;
+    final highest = selected.map((c) => c.number).reduce(max);
+    final next = selected.any((c) => c.number == _level);
+
+    return GamePreview(
+      next ? 1 : 0,
+      next ? sqrt(_level).floor() : -1,
+      pow(difference, count) * highest
+    );
+  }
+
+  List<GameCell> get selected => _cells.where((c) => c._selected).toList();
 
   Game({ int width = 5, int height = 5, int minimum = 3, Generator generator }) {
     if (generator == null) {
@@ -69,7 +73,7 @@ class Game {
 
     _cells = List.generate(
       _height * _width,
-      (i) => Cell(this._generator(this._level))
+      (i) => GameCell(this._generator(this._level))
     );
   }
 
@@ -77,22 +81,18 @@ class Game {
     _cells.forEach((c) => c._selected = false);
   }
 
-  void hoof() {
-    final difference = hoofSize;
+  void play() {
+    final play = preview;
 
-    if (difference == null) {
+    if (play == null) {
       throw GameError("No valid sequence selected.");
     }
 
-    final count = selected.length;
-    final highest = selected.map((c) => c.number).reduce(max);
-    final next = nextLevel;
+    _level += play.level;
+    _moves += play.moves;
+    _score += play.score;
 
-    _level += next ? 1 : 0;
-    _moves += next ? sqrt(_level).floor() : -1;
-    _score = pow(difference, count) * highest;
-
-    _cells = _cells.map((c) => c._selected ? Cell(_generator(_level)) : c).toList();
+    _cells = _cells.map((c) => c._selected ? GameCell(_generator(_level)) : c).toList();
   }
 
   void toggle(int x, int y) {
@@ -106,6 +106,18 @@ class Game {
 
 }
 
+class GameCell {
+
+  int _number;
+  bool _selected = false;
+
+  int get number => _number;
+  bool get selected => _selected;
+
+  GameCell(this._number);
+
+}
+
 class GameError extends Error {
 
   final String message;
@@ -114,4 +126,16 @@ class GameError extends Error {
 
 }
 
-typedef int Generator(int level);
+class GamePreview {
+
+  int _level;
+  int _moves;
+  int _score;
+
+  int get level => _level;
+  int get moves => _moves;
+  int get score => _score;
+
+  GamePreview(this._level, this._moves, this._score);
+
+}

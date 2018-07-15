@@ -3,7 +3,7 @@ import 'package:sequences/game.dart';
 
 void main() {
   group('initial state', () {
-    test('0x0 board', () {
+    test('with 0x0 board', () {
       final game = Game(width: 0, height: 0);
 
       expect(game.cells, hasLength(0));
@@ -11,7 +11,7 @@ void main() {
       expect(game.selected, isEmpty);
     });
 
-    test('2x2 board', () {
+    test('with 2x2 board', () {
       final game = Game(width: 2, height: 2);
       expect(game.cells, hasLength(4));
     });
@@ -73,61 +73,80 @@ void main() {
     });
   });
 
-  group('hoofing', () {
+  group('difference', () {
     final generator = _iterate(_sequence);
 
-    test('minimum length 1', () {
-      final game = Game(width: 5, height: 5, minimum: 1, generator: generator);
+    test('between equal numbers', () {
+      final game = Game(width: 5, height: 5, generator: generator);
 
-      expect(game.hoofSize, isNull);
+      expect(game.difference, isNull);
       game.toggle(0, 0);
-      expect(game.hoofSize, equals(0));
+      expect(game.difference, equals(0));
       game.toggle(0, 1);
-      expect(game.hoofSize, equals(0));
+      expect(game.difference, equals(0));
       game.toggle(0, 2);
-      expect(game.hoofSize, equals(0));
+      expect(game.difference, equals(0));
       game.toggle(1, 0);
-      expect(game.hoofSize, isNull);
+      expect(game.difference, isNull);
     });
 
-    test('minimum length 3', () {
-      final game = Game(width: 5, height: 5, minimum: 3, generator: generator);
+    test('between nonequal numbers', () {
+      final game = Game(width: 5, height: 5, generator: generator);
 
-      expect(game.hoofSize, isNull);
-      expect(game.nextLevel, isFalse);
+      expect(game.difference, isNull);
       game.toggle(0, 0);
-      expect(game.hoofSize, isNull);
-      expect(game.nextLevel, isFalse);
+      expect(game.difference, equals(0));
       game.toggle(4, 4);
-      expect(game.hoofSize, isNull);
-      expect(game.nextLevel, isTrue);
+      expect(game.difference, equals(4));
       game.toggle(2, 2);
-      expect(game.hoofSize, equals(2));
-      expect(game.nextLevel, isTrue);
+      expect(game.difference, equals(2));
       game.toggle(1, 1);
-      expect(game.hoofSize, isNull);
-      expect(game.nextLevel, isTrue);
+      expect(game.difference, isNull);
       game.toggle(3, 3);
-      expect(game.hoofSize, equals(1));
-      expect(game.nextLevel, isTrue);
-
-      game.toggle(1, 1);
-      expect(
-        () => game.hoof(),
-        throwsA(new isInstanceOf<GameError>())
-      );
-      game.toggle(3, 3);
-
-      expect(game.level, equals(5));
-      expect(game.moves, equals(6));
-      expect(game.score, equals(0));
-      expect(game.selected, hasLength(3));
-      game.hoof();
-      expect(game.level, equals(6));
-      expect(game.moves, equals(8));
-      expect(game.score, equals(40));
-      expect(game.selected, hasLength(0));
+      expect(game.difference, equals(1));
     });
+  });
+
+  test('gameplay', () {
+    final generator = _iterate(_sequence);
+    final game = Game(width: 5, height: 5, minimum: 3, generator: generator);
+
+    expect(game.preview, isNull);
+    game.toggle(1, 1);
+    expect(game.preview, isNull);
+    game.toggle(3, 3);
+    expect(game.preview, isNull);
+    
+    expect(
+      () => game.play(),
+      throwsA(new isInstanceOf<GameError>())
+    );
+
+    game.clear();
+    
+    expect(game.preview, isNull);
+    game.toggle(0, 4);
+    expect(game.preview, isNull);
+    game.toggle(4, 0);
+    expect(game.preview, isNull);
+    game.toggle(2, 2);
+    expect(game.preview.level, equals(1));
+    expect(game.preview.moves, equals(2));
+    expect(game.preview.score, equals(40));
+    game.play();
+    expect(game.level, equals(6));
+    expect(game.moves, equals(8));
+    expect(game.score, equals(40));
+    game.toggle(2, 4);
+    game.toggle(3, 4);
+    game.toggle(4, 4);
+    expect(game.preview.level, equals(0));
+    expect(game.preview.moves, equals(-1));
+    expect(game.preview.score, equals(5));
+    game.play();
+    expect(game.level, equals(6));
+    expect(game.moves, equals(7));
+    expect(game.score, equals(45));
   });
 }
 
