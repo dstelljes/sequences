@@ -157,6 +157,24 @@ class _GameWidgetState extends State<GameWidget> {
               score: _game.score,
               scoreDelta: _game.preview?.score,
             ),
+            new Row(
+              children: [
+                GestureDetector(
+                  child: Text("Play"),
+                  onTap: () => setState(() {
+                    if (_game.preview != null) {
+                      _game.play();
+                    }
+                  }),
+                ),
+                GestureDetector(
+                  child: Text("Restart"),
+                  onTap: () => setState(() {
+                    _game = Game();
+                  }),
+                ),
+              ]
+            )
           ];
 
           return orientation == Orientation.portrait
