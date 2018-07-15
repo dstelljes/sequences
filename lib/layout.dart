@@ -1,14 +1,62 @@
 import 'package:flutter/widgets.dart';
 import 'game.dart';
 
+typedef void CellAction(int x, int y);
+
+class Cell extends StatelessWidget {
+
+  final GameCell cell;
+
+  Cell({ this.cell });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Center(
+        child: Text(
+          "${cell.number}"
+        ),
+      ),
+      color: cell.selected ? const Color(0xFFAAAAAA) : const Color(0xFFFFFFFF),
+    );
+  }
+
+}
+
 class CellGrid extends StatelessWidget {
+
+  final List<GameCell> cells;
+  final int height;
+  final CellAction onTap;
+  final int width;
+
+  CellGrid({ this.cells, this.height, this.onTap, this.width });
 
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 1.0,
       child: Container(
-        color: const Color(0xFFFF0000)
+        child: Column(
+          children: List.generate(height, (y) =>
+            Expanded(
+              child: Row(
+                children: List.generate(width, (x) =>
+                  Expanded(
+                    child: GestureDetector(
+                      child: Cell(
+                        cell: cells[y * width + x],
+                      ),
+                      onTap: () {
+                        onTap(x, y);
+                      },
+                    ),
+                  )
+                ),
+              ),
+            ),
+          ),
+        )
       ),
     );
   }
@@ -93,7 +141,14 @@ class _GameWidgetState extends State<GameWidget> {
       child: OrientationBuilder(
         builder: (context, orientation) {
           final panes = <Widget>[
-            new CellGrid(),
+            new CellGrid(
+              cells: _game.cells,
+              height: _game.height,
+              onTap: (x, y) => setState(() {
+                _game.toggle(x, y);
+              }),
+              width: _game.width
+            ),
             new Scoreboard(
               level: _game.level,
               levelDelta: _game.preview?.level,

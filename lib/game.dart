@@ -14,12 +14,12 @@ class Game {
   int _width;
 
   List<GameCell> get cells => _cells;
-  int get height => height;
+  int get height => _height;
   int get level => _level;
-  int get minimum => minimum;
+  int get minimum => _minimum;
   int get moves => _moves;
   int get score => _score;
-  int get width => width;
+  int get width => _width;
 
   int get difference {
     if (selected.length == 0) {
