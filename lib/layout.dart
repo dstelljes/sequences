@@ -20,30 +20,55 @@ Color highlight(int number) {
 
 typedef void CellCallback(int x, int y);
 
+class Button extends StatelessWidget {
+
+  final Widget child;
+  final Color color;
+  final VoidCallback onPress;
+  final Color textColor;
+
+  Button({ this.child, this.color, this.onPress, this.textColor });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Center(
+        child: DefaultTextStyle(
+          child: GestureDetector(
+            child: child,
+            onTap: onPress,
+          ),
+          style: TextStyle(
+            color: textColor
+          ),
+        ),
+      ),
+      decoration: new BoxDecoration(
+        borderRadius: new BorderRadius.all(Radius.circular(1.0)),
+        color: color
+      ),
+    );
+  }
+
+}
+
 class Cell extends StatelessWidget {
 
   final GameCell cell;
+  final VoidCallback onToggle;
 
-  Cell({ this.cell });
+  Cell({ this.cell, this.onToggle });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       child: FittedBox(
         child: SizedBox(
-          child: Container(
-            child: Center(
-              child: Text(
-                "${cell.number}",
-                style: new TextStyle(
-                  color: cell.selected ? Color(0xFFFFFFFF) : Color(0xFF000000),
-                ),
-              ),
-            ),
-            decoration: new BoxDecoration(
-              borderRadius: new BorderRadius.all(Radius.circular(1.0)),
-              color: cell.selected ? Color(0xFF444444) : highlight(cell.number)
-            ),
+          child: Button(
+            child: Text("${cell.number}"),
+            color: cell.selected ? Color(0xFF444444) : highlight(cell.number),
+            onPress: onToggle,
+            textColor: cell.selected ? Color(0xFFFFFFFF) : Color(0xFF000000),
           ),
           height: 25.0,
           width: 25.0,
@@ -76,11 +101,9 @@ class CellGrid extends StatelessWidget {
                 child: Row(
                   children: List.generate(width, (x) =>
                     Expanded(
-                      child: GestureDetector(
-                        child: Cell(
-                          cell: cells[y * width + x],
-                        ),
-                        onTap: () {
+                      child: Cell(
+                        cell: cells[y * width + x],
+                        onToggle: () {
                           onToggle(x, y);
                         },
                       ),
