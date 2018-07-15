@@ -7,15 +7,26 @@ class Application extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      child: DefaultTextStyle(
-        child: GameWidget(),
-        style: TextStyle(
-          color: Color(0xFF000000),
-        ),
+    return WidgetsApp(
+      color: Color(0xFFFF0000),
+      initialRoute: '/',
+      onGenerateRoute: generate,
+      textStyle: TextStyle(
+        color: Color(0xFF000000),
       ),
-      textDirection: TextDirection.ltr,
     );
+  }
+
+  Route generate(RouteSettings settings) {
+    switch (settings.name) {
+      case '/':
+        return new PageRouteBuilder(
+          pageBuilder: (context, animation, secondary) => GameWidget()
+        );
+
+      default:
+        return null;
+    }
   }
 
 }

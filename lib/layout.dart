@@ -172,52 +172,54 @@ class _GameWidgetState extends State<GameWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: OrientationBuilder(
-        builder: (context, orientation) {
-          final panes = <Widget>[
-            new CellGrid(
-              cells: _game.cells,
-              height: _game.height,
-              onToggle: (x, y) => setState(() {
-                _game.toggle(x, y);
-              }),
-              width: _game.width
-            ),
-            new Scoreboard(
-              level: _game.level,
-              levelDelta: _game.preview?.level,
-              moves: _game.moves,
-              movesDelta: _game.preview?.moves,
-              score: _game.score,
-              scoreDelta: _game.preview?.score,
-            ),
-            new Row(
-              children: [
-                GestureDetector(
-                  child: Text("Play"),
-                  onTap: () => setState(() {
-                    if (_game.preview != null) {
-                      _game.play();
-                    }
-                  }),
-                ),
-                GestureDetector(
-                  child: Text("Restart"),
-                  onTap: () => setState(() {
-                    _game = Game();
-                  }),
-                ),
-              ]
-            )
-          ];
+    return SafeArea(
+      child: Container(
+        child: OrientationBuilder(
+          builder: (context, orientation) {
+            final panes = <Widget>[
+              new CellGrid(
+                cells: _game.cells,
+                height: _game.height,
+                onToggle: (x, y) => setState(() {
+                  _game.toggle(x, y);
+                }),
+                width: _game.width
+              ),
+              new Scoreboard(
+                level: _game.level,
+                levelDelta: _game.preview?.level,
+                moves: _game.moves,
+                movesDelta: _game.preview?.moves,
+                score: _game.score,
+                scoreDelta: _game.preview?.score,
+              ),
+              new Row(
+                children: [
+                  GestureDetector(
+                    child: Text("Play"),
+                    onTap: () => setState(() {
+                      if (_game.preview != null) {
+                        _game.play();
+                      }
+                    }),
+                  ),
+                  GestureDetector(
+                    child: Text("Restart"),
+                    onTap: () => setState(() {
+                      _game = Game();
+                    }),
+                  ),
+                ]
+              )
+            ];
 
-          return orientation == Orientation.portrait
-            ? Column(children: panes)
-            : Row(children: panes);
-        },
+            return orientation == Orientation.portrait
+              ? Column(children: panes)
+              : Row(children: panes);
+          },
+        ),
+        color: Color(0xFFFFFFFF),
       ),
-      color: Color(0xFFFFFFFF),
     );
   }
 
