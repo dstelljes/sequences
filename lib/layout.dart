@@ -1,7 +1,24 @@
 import 'package:flutter/widgets.dart';
 import 'game.dart';
 
-typedef void CellAction(int x, int y);
+const edgePadding = 24.0;
+
+Color highlight(int number) {
+  switch (number % 5) {
+    case 1:
+      return Color(0xFFD3E2B6);
+    case 2:
+      return Color(0xFFC3DBB4);
+    case 3:
+      return Color(0xFFAACCB1);
+    case 4:
+      return Color(0xFF87BDB1);
+    default:
+      return Color(0xFF68B3AF);
+  }
+}
+
+typedef void CellCallback(int x, int y);
 
 class Cell extends StatelessWidget {
 
@@ -11,13 +28,28 @@ class Cell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Center(
-        child: Text(
-          "${cell.number}"
+    return Padding(
+      child: FittedBox(
+        child: SizedBox(
+          child: Container(
+            child: Center(
+              child: Text(
+                "${cell.number}",
+                style: new TextStyle(
+                  color: cell.selected ? Color(0xFFFFFFFF) : Color(0xFF000000),
+                ),
+              ),
+            ),
+            decoration: new BoxDecoration(
+              borderRadius: new BorderRadius.all(Radius.circular(1.0)),
+              color: cell.selected ? Color(0xFF444444) : highlight(cell.number)
+            ),
+          ),
+          height: 25.0,
+          width: 25.0,
         ),
       ),
-      color: cell.selected ? const Color(0xFFAAAAAA) : const Color(0xFFFFFFFF),
+      padding: EdgeInsets.all(edgePadding / 6),
     );
   }
 
@@ -27,36 +59,39 @@ class CellGrid extends StatelessWidget {
 
   final List<GameCell> cells;
   final int height;
-  final CellAction onTap;
+  final CellCallback onToggle;
   final int width;
 
-  CellGrid({ this.cells, this.height, this.onTap, this.width });
+  CellGrid({ this.cells, this.height, this.onToggle, this.width });
 
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 1.0,
-      child: Container(
-        child: Column(
-          children: List.generate(height, (y) =>
-            Expanded(
-              child: Row(
-                children: List.generate(width, (x) =>
-                  Expanded(
-                    child: GestureDetector(
-                      child: Cell(
-                        cell: cells[y * width + x],
+      child: Padding(
+        child: Container(
+          child: Column(
+            children: List.generate(height, (y) =>
+              Expanded(
+                child: Row(
+                  children: List.generate(width, (x) =>
+                    Expanded(
+                      child: GestureDetector(
+                        child: Cell(
+                          cell: cells[y * width + x],
+                        ),
+                        onTap: () {
+                          onToggle(x, y);
+                        },
                       ),
-                      onTap: () {
-                        onTap(x, y);
-                      },
-                    ),
-                  )
+                    )
+                  ),
                 ),
               ),
             ),
-          ),
-        )
+          )
+        ),
+        padding: EdgeInsets.all(edgePadding),
       ),
     );
   }
@@ -144,7 +179,7 @@ class _GameWidgetState extends State<GameWidget> {
             new CellGrid(
               cells: _game.cells,
               height: _game.height,
-              onTap: (x, y) => setState(() {
+              onToggle: (x, y) => setState(() {
                 _game.toggle(x, y);
               }),
               width: _game.width
