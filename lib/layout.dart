@@ -1,7 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'game.dart';
 
-const edgePadding = 24.0;
+const buttonPadding = edgePadding / 2;
+const cellPadding = edgePadding / 3;
+const edgePadding = 12.0;
 
 Color highlight(int number) {
   switch (number % 5) {
@@ -31,22 +33,23 @@ class Button extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Center(
-        child: DefaultTextStyle(
-          child: GestureDetector(
+    return GestureDetector(
+      child: Container(
+        child: Center(
+          child: DefaultTextStyle(
             child: child,
-            onTap: onPress,
-          ),
-          style: TextStyle(
-            color: textColor
+            style: TextStyle(
+              color: textColor
+            ),
           ),
         ),
+        decoration: new BoxDecoration(
+          borderRadius: new BorderRadius.all(Radius.circular(1.0)),
+          color: color
+        ),
+        padding: EdgeInsets.all(buttonPadding),
       ),
-      decoration: new BoxDecoration(
-        borderRadius: new BorderRadius.all(Radius.circular(1.0)),
-        color: color
-      ),
+      onTap: onPress,
     );
   }
 
@@ -61,20 +64,17 @@ class Cell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      child: FittedBox(
-        child: SizedBox(
-          child: Button(
-            child: Text("${cell.number}"),
-            color: cell.selected ? Color(0xFF444444) : highlight(cell.number),
-            onPress: onToggle,
-            textColor: cell.selected ? Color(0xFFFFFFFF) : Color(0xFF000000),
-          ),
-          height: 25.0,
-          width: 25.0,
+    return FittedBox(
+      child: SizedBox(
+        child: Button(
+          child: Text("${cell.number}"),
+          color: cell.selected ? Color(0xFF444444) : highlight(cell.number),
+          onPress: onToggle,
+          textColor: cell.selected ? Color(0xFFFFFFFF) : Color(0xFF000000),
         ),
+        height: 28.0,
+        width: 28.0,
       ),
-      padding: EdgeInsets.all(edgePadding / 6),
     );
   }
 
@@ -93,28 +93,28 @@ class CellGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 1.0,
-      child: Padding(
-        child: Container(
-          child: Column(
-            children: List.generate(height, (y) =>
-              Expanded(
-                child: Row(
-                  children: List.generate(width, (x) =>
-                    Expanded(
+      child: Container(
+        child: Column(
+          children: List.generate(height, (y) =>
+            Expanded(
+              child: Row(
+                children: List.generate(width, (x) =>
+                  Expanded(
+                    child: Padding(
                       child: Cell(
                         cell: cells[y * width + x],
                         onToggle: () {
                           onToggle(x, y);
                         },
                       ),
-                    )
-                  ),
+                      padding: EdgeInsets.all(cellPadding),
+                    ),
+                  )
                 ),
               ),
             ),
-          )
-        ),
-        padding: EdgeInsets.all(edgePadding),
+          ),
+        )
       ),
     );
   }
@@ -155,8 +155,8 @@ class Scoreboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Center(
+    return FittedBox(
+      child: SizedBox(
         child: Column(
           children: [
             ScoreboardItem(
@@ -175,7 +175,7 @@ class Scoreboard extends StatelessWidget {
               value: score
             ),
           ],
-        )
+        ),
       ),
     );
   }
@@ -197,49 +197,81 @@ class _GameWidgetState extends State<GameWidget> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Container(
-        child: OrientationBuilder(
-          builder: (context, orientation) {
-            final panes = <Widget>[
-              new CellGrid(
-                cells: _game.cells,
-                height: _game.height,
-                onToggle: (x, y) => setState(() {
-                  _game.toggle(x, y);
-                }),
-                width: _game.width
-              ),
-              new Scoreboard(
-                level: _game.level,
-                levelDelta: _game.preview?.level,
-                moves: _game.moves,
-                movesDelta: _game.preview?.moves,
-                score: _game.score,
-                scoreDelta: _game.preview?.score,
-              ),
-              new Row(
-                children: [
-                  GestureDetector(
-                    child: Text("Play"),
-                    onTap: () => setState(() {
-                      if (_game.preview != null) {
-                        _game.play();
-                      }
+        child: Padding(
+          child: OrientationBuilder(
+            builder: (context, orientation) {
+              final panes = <Widget>[
+                Padding(
+                  child: CellGrid(
+                    cells: _game.cells,
+                    height: _game.height,
+                    onToggle: (x, y) => setState(() {
+                      _game.toggle(x, y);
                     }),
+                    width: _game.width
                   ),
-                  GestureDetector(
-                    child: Text("Restart"),
-                    onTap: () => setState(() {
-                      _game = Game();
-                    }),
+                  padding: EdgeInsets.all(edgePadding - cellPadding)
+                ),
+                Expanded(
+                  child: Column(
+                    children: [
+                      Padding(
+                        child: FittedBox(
+                          child: SizedBox(
+                            child: Button(
+                              child: Text("Play"),
+                              color: Color(0xFF000055),
+                              onPress: () => setState(() {
+                                if (_game.preview != null) {
+                                  _game.play();
+                                }
+                              }),
+                            ),
+                            width: 200.0,
+                          ),
+                          fit: BoxFit.fitWidth,
+                        ),
+                        padding: EdgeInsets.all(edgePadding)
+                      ),
+                      Expanded(
+                        child: Scoreboard(
+                          level: _game.level,
+                          levelDelta: _game.preview?.level,
+                          moves: _game.moves,
+                          movesDelta: _game.preview?.moves,
+                          score: _game.score,
+                          scoreDelta: _game.preview?.score,
+                        ),
+                      ),
+                      Padding(
+                        child: FittedBox(
+                          child: SizedBox(
+                            child: Button(
+                              child: Text("Restart"),
+                              color: Color(0xFF90EE90),
+                              onPress: () => setState(() {
+                                _game = Game();
+                              }),
+                              textColor: Color(0xFF000000),
+                            ),
+                            width: 200.0,
+                          ),
+                          fit: BoxFit.fitWidth,
+                        ),
+                        padding: EdgeInsets.all(edgePadding)
+                      ),
+                    ],
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                   ),
-                ]
-              )
-            ];
+                ),
+              ];
 
-            return orientation == Orientation.portrait
-              ? Column(children: panes)
-              : Row(children: panes);
-          },
+              return orientation == Orientation.portrait
+                ? Column(children: panes)
+                : Row(children: panes);
+            },
+          ),
+          padding: EdgeInsets.all(edgePadding)
         ),
         color: Color(0xFFFFFFFF),
       ),
