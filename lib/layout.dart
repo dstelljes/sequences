@@ -250,7 +250,7 @@ class _GameWidgetState extends State<GameWidget> {
                           child: SizedBox(
                             child: Button(
                               child: Text("Play"),
-                              color: Color(0xFF000055),
+                              color: _game.preview != null ? Color(0xFF000055) : Color(0xFFAAAAAA),
                               onPress: () => setState(() {
                                 if (_game.preview != null) {
                                   _game.play();
