@@ -5,6 +5,16 @@ const buttonPadding = edgePadding / 2;
 const cellPadding = edgePadding / 3;
 const edgePadding = 12.0;
 
+Color balance(int number) {
+  if (number < 0)
+    return Color(0xFFFF4136);
+
+  if (number > 0)
+    return Color(0xFF90EE90);
+
+  return Color(0xFF888888);
+}
+
 Color highlight(int number) {
   switch (number % 5) {
     case 1:
@@ -18,6 +28,12 @@ Color highlight(int number) {
     default:
       return Color(0xFF68B3AF);
   }
+}
+
+String sign(int number) {
+  return number < 0
+    ? "$number"
+    : "+$number";
 }
 
 typedef void CellCallback(int x, int y);
@@ -131,12 +147,30 @@ class ScoreboardItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text("$label:"),
-        Text("$value"),
-        Text(delta != null ? "$delta" : ""),
-      ],
+    return Container(
+      child: Row(
+        children: [
+          Container(
+            child: Text(
+              "$label:",
+            ),
+            width: 60.0,
+          ),
+          Expanded(
+            child: Text(
+              delta != null ? sign(delta) : "",
+              style: TextStyle(color: balance(delta ?? 0)),
+              textAlign: TextAlign.end,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              "$value",
+              textAlign: TextAlign.end,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -155,28 +189,24 @@ class Scoreboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FittedBox(
-      child: SizedBox(
-        child: Column(
-          children: [
-            ScoreboardItem(
-              delta: levelDelta,
-              label: "Level",
-              value: level,
-            ),
-            ScoreboardItem(
-              delta: movesDelta,
-              label: "Moves",
-              value: moves
-            ),
-            ScoreboardItem(
-              delta: scoreDelta,
-              label: "Score",
-              value: score
-            ),
-          ],
+    return Column(
+      children: [
+        ScoreboardItem(
+          delta: levelDelta,
+          label: "Level",
+          value: level,
         ),
-      ),
+        ScoreboardItem(
+          delta: movesDelta,
+          label: "Moves",
+          value: moves
+        ),
+        ScoreboardItem(
+          delta: scoreDelta,
+          label: "Score",
+          value: score
+        ),
+      ],
     );
   }
 
@@ -231,17 +261,26 @@ class _GameWidgetState extends State<GameWidget> {
                           ),
                           fit: BoxFit.fitWidth,
                         ),
-                        padding: EdgeInsets.all(edgePadding)
+                        padding: EdgeInsets.all(edgePadding),
                       ),
                       Expanded(
-                        child: Scoreboard(
-                          level: _game.level,
-                          levelDelta: _game.preview?.level,
-                          moves: _game.moves,
-                          movesDelta: _game.preview?.moves,
-                          score: _game.score,
-                          scoreDelta: _game.preview?.score,
-                        ),
+                        child: Padding(
+                          child: FittedBox(
+                            child: SizedBox(
+                              child: Scoreboard(
+                                level: _game.level,
+                                levelDelta: _game.preview?.level,
+                                moves: _game.moves,
+                                movesDelta: _game.preview?.moves,
+                                score: _game.score,
+                                scoreDelta: _game.preview?.score,
+                              ),
+                              width: 200.0,
+                            ),
+                            fit: BoxFit.contain,
+                          ),
+                          padding: EdgeInsets.all(edgePadding),
+                        )
                       ),
                       Padding(
                         child: FittedBox(
@@ -256,7 +295,7 @@ class _GameWidgetState extends State<GameWidget> {
                             ),
                             width: 200.0,
                           ),
-                          fit: BoxFit.fitWidth,
+                          fit: BoxFit.contain,
                         ),
                         padding: EdgeInsets.all(edgePadding)
                       ),
